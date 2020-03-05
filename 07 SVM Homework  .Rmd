@@ -1,0 +1,256 @@
+---
+title: "07 SVM Homework"
+author: "Xinci Chen"
+date: "3/5/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(e1071)
+```
+
+## 3 (a)
+```{r}
+x1 = c(3, 2, 4, 1, 2, 4, 4)
+x2 = c(4, 2, 4, 4, 1, 3, 1)
+colors = c("red", "red", "red", "red", "blue", "blue", "blue")
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+```
+
+## (b)
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+```
+
+## (c)
+
+## (d)
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+abline(-1, 1, lty = 2)
+abline(0, 1, lty = 2)
+```
+
+## (e)
+
+## (f)
+
+## (g)
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.3, 1)
+```
+
+## (h)
+```{r}
+plot(x1, x2, col = colors, xlim = c(0, 5), ylim = c(0, 5))
+points(c(3), c(1), col = c("red"))
+```
+
+## 5(a)
+```{r}
+set.seed(1)
+x1 <- runif(500) - 0.5
+x2 <- runif(500) - 0.5
+y <- as.integer(x1 ^ 2 - x2 ^ 2 > 0)
+```
+
+## (b)
+```{r}
+plot(x1, x2, xlab = "X1", ylab = "X2", col = (4 - y), pch = (3 - y))
+```
+
+## (c)
+```{r}
+logit.fit <- glm(y ~ x1 + x2, family = "binomial")
+summary(logit.fit)
+```
+
+## (d)
+```{r}
+data <- data.frame(x1 = x1, x2 = x2, y = y)
+probs <- predict(logit.fit, data, type = "response")
+preds <- rep(0, 500)
+preds[probs > 0.47] <- 1
+plot(data[preds == 1, ]$x1, data[preds == 1, ]$x2, col = (4 - 1), pch = (3 - 1), xlab = "X1", ylab = "X2")
+points(data[preds == 0, ]$x1, data[preds == 0, ]$x2, col = (4 - 0), pch = (3 - 0))
+```
+
+## (e)
+```{r}
+logitnl.fit <- glm(y ~ poly(x1, 2) + poly(x2, 2) + I(x1 * x2), family = "binomial")
+summary(logitnl.fit)
+```
+
+## (f)
+```{r}
+probs <- predict(logitnl.fit, data, type = "response")
+preds <- rep(0, 500)
+preds[probs > 0.47] <- 1
+plot(data[preds == 1, ]$x1, data[preds == 1, ]$x2, col = (4 - 1), pch = (3 - 1), xlab = "X1", ylab = "X2")
+points(data[preds == 0, ]$x1, data[preds == 0, ]$x2, col = (4 - 0), pch = (3 - 0))
+```
+
+## (g)
+```{r}
+data$y <- as.factor(data$y)
+svm.fit <- svm(y ~ x1 + x2, data, kernel = "linear", cost = 0.01)
+preds <- predict(svm.fit, data)
+plot(data[preds == 0, ]$x1, data[preds == 0, ]$x2, col = (4 - 0), pch = (3 - 0), xlab = "X1", ylab = "X2")
+points(data[preds == 1, ]$x1, data[preds == 1, ]$x2, col = (4 - 1), pch = (3 - 1))
+```
+
+## (h)
+```{r}
+data$y <- as.factor(data$y)
+svmnl.fit <- svm(y ~ x1 + x2, data, kernel = "radial", gamma = 1)
+preds <- predict(svmnl.fit, data)
+plot(data[preds == 0, ]$x1, data[preds == 0, ]$x2, col = (4 - 0), pch = (3 - 0), xlab = "X1", ylab = "X2")
+points(data[preds == 1, ]$x1, data[preds == 1, ]$x2, col = (4 - 1), pch = (3 - 1))
+```
+
+## (i)
+
+
+## 7 (a)
+
+```{r}
+var <- ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+Auto$mpglevel <- as.factor(var)
+```
+
+## (b)
+
+```{r}
+set.seed(1)
+tune.out <- tune(svm, mpglevel ~ ., data = Auto, kernel = "linear", ranges = list(cost = c(0.01, 0.1, 1, 5, 10, 100, 1000)))
+summary(tune.out)
+```
+
+## (c)
+
+```{r}
+set.seed(1)
+tune.out <- tune(svm, mpglevel ~ ., data = Auto, kernel = "polynomial", ranges = list(cost = c(0.01, 0.1, 1, 5, 10, 100), degree = c(2, 3, 4)))
+summary(tune.out)
+set.seed(1)
+tune.out <- tune(svm, mpglevel ~ ., data = Auto, kernel = "radial", ranges = list(cost = c(0.01, 0.1, 1, 5, 10, 100), gamma = c(0.01, 0.1, 1, 5, 10, 100)))
+summary(tune.out)
+```
+
+## (d)
+
+```{r}
+svm.linear <- svm(mpglevel ~ ., data = Auto, kernel = "linear", cost = 1)
+svm.poly <- svm(mpglevel ~ ., data = Auto, kernel = "polynomial", cost = 100, degree = 2)
+svm.radial <- svm(mpglevel ~ ., data = Auto, kernel = "radial", cost = 100, gamma = 0.01)
+plotpairs = function(fit) {
+    for (name in names(Auto)[!(names(Auto) %in% c("mpg", "mpglevel", "name"))]) {
+        plot(fit, Auto, as.formula(paste("mpg~", name, sep = "")))
+    }
+}
+plotpairs(svm.linear)
+plotpairs(svm.poly)
+plotpairs(svm.radial)
+```
+
+
+## 8 (a)
+```{r}
+set.seed(1)
+train <- sample(nrow(OJ), 800)
+OJ.train <- OJ[train, ]
+OJ.test <- OJ[-train, ]
+```
+
+## (b)
+```{r}
+svm.linear <- svm(Purchase ~ ., data = OJ.train, kernel = "linear", cost = 0.01)
+summary(svm.linear)
+```
+
+## (c)
+```{r}
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(78 + 55) / (439 + 228 + 78 + 55)
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(31 + 18) / (141 + 80 + 31 + 18)
+```
+
+## (d)
+```{r}
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "linear", ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(tune.out)
+```
+
+## (e)
+```{r}
+svm.linear <- svm(Purchase ~ ., kernel = "linear", data = OJ.train, cost = tune.out$best.parameter$cost)
+train.pred <- predict(svm.linear, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(71 + 56) / (438 + 235 + 71 + 56)
+test.pred <- predict(svm.linear, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(32 + 19) / (140 + 79 + 32 + 19)
+```
+
+## (f)
+```{r}
+svm.radial <- svm(Purchase ~ ., kernel = "radial", data = OJ.train)
+summary(svm.radial)
+train.pred <- predict(svm.radial, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(77 + 39) / (455 + 229 + 77 + 39)
+test.pred <- predict(svm.radial, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(28 + 18) / (141 + 83 + 28 + 18)
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "radial", ranges = list(cost = 10^seq(-2, 
+    1, by = 0.25)))
+summary(tune.out)
+svm.radial <- svm(Purchase ~ ., kernel = "radial", data = OJ.train, cost = tune.out$best.parameter$cost)
+summary(svm.radial)
+train.pred <- predict(svm.radial, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(77 + 39) / (455 + 229 + 77 + 39)
+test.pred <- predict(svm.radial, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(28 + 18) / (141 + 83 + 28 + 18)
+```
+
+## (g)
+```{r}
+svm.poly <- svm(Purchase ~ ., kernel = "polynomial", data = OJ.train, degree = 2)
+summary(svm.poly)
+train.pred <- predict(svm.poly, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(105 + 33) / (461 + 201 + 105 + 33)
+test.pred <- predict(svm.poly, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(41 + 10) / (149 + 70 + 41 + 10)
+set.seed(2)
+tune.out <- tune(svm, Purchase ~ ., data = OJ.train, kernel = "polynomial", degree = 2, ranges = list(cost = 10^seq(-2, 1, by = 0.25)))
+summary(tune.out)
+svm.poly <- svm(Purchase ~ ., kernel = "polynomial", degree = 2, data = OJ.train, cost = tune.out$best.parameter$cost)
+summary(svm.poly)
+train.pred <- predict(svm.poly, OJ.train)
+table(OJ.train$Purchase, train.pred)
+(72 + 44) / (450 + 234 + 72 + 44)
+test.pred <- predict(svm.poly, OJ.test)
+table(OJ.test$Purchase, test.pred)
+(31 + 19) / (140 + 80 + 31 + 19)
+```
+
+## (h)
+The radial basis kernel seems to be producing minimum misclassification error on both train and test data.
+
+
+
+
