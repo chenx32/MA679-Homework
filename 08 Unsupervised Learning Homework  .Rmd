@@ -1,0 +1,184 @@
+---
+title: "08 Unsupervised Learning Homework"
+author: "Xinci Chen"
+date: "3/16/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 10.3
+
+## (a)
+```{r}
+x <- cbind(c(1, 1, 0, 5, 6, 4), c(4, 3, 4, 1, 2, 0))
+plot(x[,1], x[,2])
+```
+
+## (b)
+```{r}
+set.seed(1)
+labels <- sample(2, nrow(x), replace = T)
+labels
+plot(x[, 1], x[, 2], col = (labels + 1), pch = 20, cex = 2)
+```
+
+## (c)
+```{r}
+centroid1 <- c(mean(x[labels == 1, 1]), mean(x[labels == 1, 2]))
+centroid2 <- c(mean(x[labels == 2, 1]), mean(x[labels == 2, 2]))
+plot(x[,1], x[,2], col=(labels + 1), pch = 20, cex = 2)
+points(centroid1[1], centroid1[2], col = 2, pch = 4)
+points(centroid2[1], centroid2[2], col = 3, pch = 4)
+```
+
+## (d)
+```{r}
+labels <- c(1, 1, 1, 2, 2, 2)
+plot(x[, 1], x[, 2], col = (labels + 1), pch = 20, cex = 2)
+points(centroid1[1], centroid1[2], col = 2, pch = 4)
+points(centroid2[1], centroid2[2], col = 3, pch = 4)
+```
+
+## (e)
+```{r}
+centroid1 <- c(mean(x[labels == 1, 1]), mean(x[labels == 1, 2]))
+centroid2 <- c(mean(x[labels == 2, 1]), mean(x[labels == 2, 2]))
+plot(x[,1], x[,2], col=(labels + 1), pch = 20, cex = 2)
+points(centroid1[1], centroid1[2], col = 2, pch = 4)
+points(centroid2[1], centroid2[2], col = 3, pch = 4)
+```
+
+##(f)
+```{r}
+plot(x[, 1], x[, 2], col=(labels + 1), pch = 20, cex = 2)
+```
+
+## 10.5
+
+```{r}
+socks <- c(8, 11, 7, 6, 5, 6, 7, 8)
+computers <- c(0, 0, 0, 0, 1, 1, 1, 1)
+x <- cbind(socks, computers)
+labels <- c(1, 1, 2, 2, 2, 2, 1, 1)
+plot(x[, 1], x[, 2], col=(labels + 1), pch = 20, cex = 2, asp = 1)
+x <- cbind(scale(socks, center = FALSE), scale(computers, center = FALSE))
+sd(computers)
+labels <- c(1, 1, 2, 2, 2, 2, 1, 1)
+plot(x[, 1], x[, 2], col=(labels + 1), pch = 20, cex = 2, asp = 1)
+```
+
+## 10.6
+## (a)
+90% of the variance in the data is not contained in the first principal component.
+
+## (c)
+```{r}
+set.seed(1)
+Control <- matrix(rnorm(50 * 1000), ncol = 50)
+Treatment <- matrix(rnorm(50 * 1000), ncol = 50)
+X <- cbind(Control, Treatment)
+X[1, ] <- seq(-18, 18 - .36, .36) # linear trend in one dimension
+pr.out <- prcomp(scale(X))
+summary(pr.out)$importance[, 1]
+X <- rbind(X, c(rep(10, 50), rep(0, 50)))
+pr.out <- prcomp(scale(X))
+summary(pr.out)$importance[, 1]
+```
+
+## 10.8
+
+## (a)
+
+```{r}
+pr.out <- prcomp(USArrests, scale = TRUE)
+pr.var <- pr.out$sdev^2
+pve <- pr.var / sum(pr.var)
+sum(pr.var)
+```
+
+## (b)
+```{r}
+loadings <- pr.out$rotation
+USArrests2 <- scale(USArrests)
+sumvar <- sum(apply(as.matrix(USArrests2)^2, 2, sum))
+apply((as.matrix(USArrests2) %*% loadings)^2, 2, sum) / sumvar
+```
+
+## 10.9
+
+## (a)
+```{r}
+set.seed(2)
+hc.complete <- hclust(dist(USArrests), method = "complete")
+plot(hc.complete)
+```
+
+## (b)
+```{r}
+cutree(hc.complete, 3)
+```
+
+## (c)
+```{r}
+sd.data <- scale(USArrests)
+hc.complete.sd <- hclust(dist(sd.data), method = "complete")
+plot(hc.complete.sd)
+```
+
+## (d)
+```{r}
+cutree(hc.complete.sd, 3)
+table(cutree(hc.complete, 3), cutree(hc.complete.sd, 3))
+```
+
+## 10.10
+
+## (a)
+```{r}
+set.seed(2)
+x <- matrix(rnorm(20 * 3 * 50, mean = 0, sd = 0.001), ncol = 50)
+x[1:20, 2] <- 1
+x[21:40, 1] <- 2
+x[21:40, 2] <- 2
+x[41:60, 1] <- 1
+true.labels <- c(rep(1, 20), rep(2, 20), rep(3, 20))
+```
+
+## (b)
+```{r}
+pr.out <- prcomp(x)
+plot(pr.out$x[, 1:2], col = 1:3, xlab = "Z1", ylab = "Z2", pch = 19)
+```
+
+## (c)
+```{r}
+km.out <- kmeans(x, 3, nstart = 20)
+table(true.labels, km.out$cluster)
+```
+
+## (d)
+```{r}
+km.out <- kmeans(x, 2, nstart = 20)
+table(true.labels, km.out$cluster)
+```
+
+## (e)
+```{r}
+km.out <- kmeans(x, 4, nstart = 20)
+table(true.labels, km.out$cluster)
+```
+
+## (f)
+```{r}
+km.out <- kmeans(pr.out$x[, 1:2], 3, nstart = 20)
+table(true.labels, km.out$cluster)
+```
+
+## (g)
+```{r}
+km.out <- kmeans(scale(x), 3, nstart = 20)
+table(true.labels, km.out$cluster)
+```
